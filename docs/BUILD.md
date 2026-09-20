@@ -57,6 +57,27 @@ validated build reproduced a **bit-for-bit identical** output bitstream
 (matching SHA-256), not just matching resource/timing numbers — so this
 reproducibility claim isn't theoretical.
 
+## Qualified seed and one-command build
+
+`Raster.qsf` pins **seed 52**, the timing-qualified seed. Measured on the current
+source (all eight corners, zero total negative slack): seed 52 setup +0.335 ns,
+seed 87 +0.064 ns, and seed 61 **fails** setup at -0.199 ns. Seed 52 was rebuilt
+after the project and source-file renames and produced a byte-identical bitstream;
+seeds 61 and 87 were measured before the renames. Do not use seed 61.
+
+The Quartus project is named `Raster`, so a build writes `Raster.rbf`. Copy it to a
+dated `Raster_YYYYMMDD.rbf` name when packaging. To reproduce the three-seed flow
+below from a clean checkout in one step:
+
+```sh
+tools/build_seeds.sh /path/to/isolated-output          # seeds 52 61 87
+tools/build_seeds.sh /path/to/isolated-output 52       # just seed 52
+```
+
+It copies the tree (without `.git` or `dist/`) into one directory per seed, sets the
+seed, runs `quartus_sh --flow compile Raster`, then runs the eight-corner timing
+sweep. Results land in `timing_results.json`; bitstreams in `seed*/output_files/`.
+
 ## Timing validation beyond the default flow
 
 The full compile flow's own built-in timing analysis checks one operating

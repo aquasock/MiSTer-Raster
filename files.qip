@@ -49,8 +49,8 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/mpeg2_new/mpeg2_h262_p_diagno
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mpeg2_new/mpeg2_h262_two_picture_probe_p_chain.sv
 
 # Legacy MPEG2FPGA and its unused bridge/wrapper were removed in gate two.
-set_global_assignment -name SDC_FILE MediaPlayer.sdc
-set_global_assignment -name SYSTEMVERILOG_FILE MediaPlayer.sv
+set_global_assignment -name SDC_FILE Raster.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE Raster.sv
 
 # Progressive file playback through stock Main; no host-side demultiplexer.
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mpeg2_new/mpeg2_h262_program_stream_demux.sv

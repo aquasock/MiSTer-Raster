@@ -52,7 +52,7 @@ mpeg2_program_stream_ingress #(.ENABLE_AUDIO(1),.APPEND_RAW_END(1),.ENABLE_FILE_
     .demux_error(av_raw_error)
 );
 
-`include "MediaPlayer_av.svh"
+`include "Raster_av.svh"
 
 mpeg2_h262_inband_metadata mpeg2_h262_inband_metadata
 (
@@ -93,7 +93,7 @@ mpeg2_stream_fifo mpeg2_stream_fifo
 
 // AUDIO_FORK_POINT[DDR_CLIENT]: advisory v0.5.0 handoff, not a permanent ABI.
 // If audio eventually needs external buffering, integrate it as an explicit
-// additional DDR client at mpeg2_h262_ddram_arbiter in MediaPlayer_top_framebuffer.svh
+// additional DDR client at mpeg2_h262_ddram_arbiter in Raster_top_framebuffer.svh
 // (or a successor system arbiter).  Allocate a separate address region and
 // preserve the video writer/reader/prediction response ownership and the
 // [17:16] frame-region protection.  Never reuse P/B prediction request signals

@@ -4,8 +4,8 @@
 // Future A/V synchronization should observe the presentation side, not H.262
 // syntax state.  Useful starting signals are display_v_pos here plus
 // mpeg2_new_swap_window_pulse / mpeg2_new_b_presentation_complete in
-// MediaPlayer_top_prediction.svh and the actual framebuffer swap in
-// MediaPlayer_top_framebuffer.svh.  Export a
+// Raster_top_prediction.svh and the actual framebuffer swap in
+// Raster_top_framebuffer.svh.  Export a
 // clean video-present/timebase event to a higher-level A/V controller; let that
 // controller use timestamps/buffer occupancy/drop-repeat policy rather than
 // directly stalling either codec's internal parser for normal synchronization.

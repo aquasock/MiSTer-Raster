@@ -58,7 +58,7 @@ assign BUTTONS = 0;
 localparam CONF_STR = {
 	"Raster;;",
 	"S0,MPGTAR,Load movie or playlist;",
-`include "MediaPlayer_subtitle_menu.svh"
+`include "Raster_subtitle_menu.svh"
 	"-;",
 	"-;",
 	"O[6],Refresh rate,59.94 Hz,50 Hz;",

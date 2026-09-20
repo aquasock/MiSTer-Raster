@@ -8,9 +8,9 @@ new resource/timing claims require a new fitted build.
 ## Integration
 
 `sys_top` instantiates `emu`, the MiSTer scaler/video processing, the player
-overlay, and the platform OSD. `MediaPlayer.sv` assembles the emu body from
+overlay, and the platform OSD. `Raster.sv` assembles the emu body from
 ports, file, session, clocks, container, decoder, prediction, framebuffer and
-output includes. `MediaPlayer_top_file.svh` holds the shared file/session
+output includes. `Raster_top_file.svh` holds the shared file/session
 signals that previously lived in a music-named include.
 
 The core exposes ordinary video/audio signals plus `PLAYER_UI_CLOCK`,
@@ -26,7 +26,7 @@ use a DDR reservoir ahead of the H.262 parsing, inverse quantization, shared
 IDCT and I/P/B reconstruction logic. Frame storage and presentation scheduling
 retain reference-bank ownership and B-picture display-order handling.
 
-MP2 decoding and synthesis use on-chip storage. `MediaPlayer_av.svh` connects
+MP2 decoding and synthesis use on-chip storage. `Raster_av.svh` connects
 the audio FIFO, decoder, PCM clock-domain FIFO and timestamped PCM sink.
 The movie audio clock, origin timestamps and seek coordination are retained.
 EOF waits for both final video presentation and the final audio sample.

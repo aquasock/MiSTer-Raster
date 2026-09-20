@@ -2,7 +2,7 @@
 
 Use a built Raster RBF on the supported Cyclone V MiSTer hardware. Copy it to
 the SD card's `_Other` directory and select it from MiSTer. The Quartus project
-currently produces `MediaPlayer.rbf`; use a dated `Raster_YYYYMMDD.rbf` filename
+produces `Raster.rbf`; copy it to a dated `Raster_YYYYMMDD.rbf` filename
 when packaging a qualified build. This cleanup does not include a new release.
 
 Open the core OSD and choose **Load movie or playlist** to select an MPEG-2 Program Stream

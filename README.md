@@ -36,13 +36,13 @@ restrictions. Subtitles are bounded plain-text SRT with two lines.
 
 ## Building and validation
 
-Use Quartus Prime Lite 17.0.2 Build 602 with `MediaPlayer.qpf`:
+Use Quartus Prime Lite 17.0.2 Build 602 with `Raster.qpf`:
 
 ```sh
-quartus_sh --flow compile MediaPlayer
+quartus_sh --flow compile Raster
 ```
 
-The Quartus project retains its existing MediaPlayer filename. Keep build
+The Quartus project is named Raster, so a build produces `Raster.rbf`. Keep build
 outputs outside the source tree; see [Build](docs/BUILD.md) for the three-seed
 and multi-corner qualification procedure. Three movie-only builds pass all eight available timing corners for constrained
 paths; see [build results](docs/RASTER_BUILD_RESULTS.md) for the selected local
