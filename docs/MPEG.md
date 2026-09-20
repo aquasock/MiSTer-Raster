@@ -5,8 +5,7 @@ the same Program Stream (see the architecture document for how the container
 demux splits them). Video is H.262; normative basis for that part is ITU-T
 H.262 (02/2000) / ISO/IEC 13818-2:2000 and, for presentation timing units,
 ITU-T H.222.0 / ISO/IEC 13818-1 (33-bit PTS at the 90 kHz systems-layer
-timebase). Music/album audio is a completely separate path — FLAC, covered
-in its own document — that never runs at the same time as this one.
+timebase). Movie audio remains part of the same playback session.
 
 ## Design principle: syntax validity vs. implementation capability
 
@@ -117,10 +116,8 @@ order) is what actually reaches the screen.
 
 Reconstruction, reference reads, and prediction writes all go through one
 four-client arbiter (picture-store writer, framebuffer-scanout reader,
-P/B reference-prediction reads, and the compressed-byte/audio stream client,
-the last shared with FLAC music playback since the two modes are mutually
-exclusive per session — see the architecture document for the full picture,
-including the platform-level arbitration layer above this one). The
+P/B reference-prediction reads, and the compressed-video stream client;
+see the architecture document for the platform-level arbitration layer). The
 compressed-video ingress itself sits in an 8 MiB DDR ring ahead of the
 framebuffer regions, holding one compressed byte (plus optional PTS/EOF tag)
 per word.
@@ -137,9 +134,7 @@ it.
 
 **Accepted profile**, checked from the frame header itself: 48 kHz only
 (the other two MPEG-1 sample rates are rejected), stereo/dual-channel/joint-stereo
-only (the mode field's mono encoding is explicitly rejected — this project's
-audio paths are stereo-only across the board, matching FLAC's own
-stereo-only restriction), and bitrates from 112–384 kb/s only — the lower
+only (the mode field's mono encoding is explicitly rejected), and bitrates from 112–384 kb/s only — the lower
 half of the Layer II bitrate table (32–96 kb/s, generally associated with
 lower-quality or mono content) is out of scope. **CRC-protected frames are
 rejected outright**, not decoded-with-unchecked-CRC — the header's
@@ -206,8 +201,7 @@ where these sit in the overall menu structure):
   NTSC-style (525 total lines) and PAL-style (625 total lines) output
   timing, and also feeds the B-picture presentation scheduler's cadence
   logic — frame pacing for pulldown/repeat behavior is aware of which
-  output rate is actually selected, not fixed to one assumption. Hidden
-  from the menu entirely during music playback, where it has no effect.
+  output rate is actually selected, not fixed to one assumption.
 - **Color matrix** (Auto / BT.601 / BT.709) selects the RGB conversion
   matrix applied ahead of the framebuffer. Auto uses whichever matrix the
   stream itself signaled (resolved per-frame in the picture-color stage
@@ -216,8 +210,7 @@ where these sit in the overall menu structure):
   currently-decoded frame's own signaled value cross independently into the
   video clock domain and only commit together at the first pixel of the
   next frame, so changing this setting — or a new stream signaling a
-  different matrix — never produces a mid-frame color seam. Also hidden
-  during music playback.
+  different matrix — never produces a mid-frame color seam.
 
 ## What's explicitly rejected as out-of-capability (not corrupt)
 

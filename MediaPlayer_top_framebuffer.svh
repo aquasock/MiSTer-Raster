@@ -59,7 +59,7 @@ mpeg2_h262_ddram_arbiter #(.ENABLE_QUIESCE(1),.ENABLE_DISPLAY_RELEASE(1)) mpeg2_
 (
     .clk             (clk_mpeg2),
     .reset           (reset_mpeg2),
-    .quiesce(media_quiesce||media_music_mode),.idle(media_movie_ddr_idle),
+    .quiesce(media_quiesce),.idle(media_movie_ddr_idle),
     .release_display_bank(media_seeking),
     .writer_burstcnt (mpeg2_new_ddr_wr_burstcnt),
     .writer_addr     (mpeg2_new_ddr_wr_addr),
@@ -81,10 +81,9 @@ mpeg2_h262_ddram_arbiter #(.ENABLE_QUIESCE(1),.ENABLE_DISPLAY_RELEASE(1)) mpeg2_
     .stream_addr(av_mem_addr),.stream_din(av_mem_data),
     .stream_rd(av_mem_read),.stream_we(av_mem_write),.stream_busy(av_mem_busy),
     .stream_dout_ready(av_mem_q_valid),
-    // Quiesce blocks movie grants during music. Keep physical busy here:
-    // forcing busy with music mode would prevent idle and deadlock mode exit.
+    // Preserve physical busy while quiescing so accepted DDR requests drain.
     .ddram_busy      (DDRAM_BUSY),
-    .ddram_dout_ready(DDRAM_DOUT_READY&&!media_music_mode),
+    .ddram_dout_ready(DDRAM_DOUT_READY),
     .ddram_burstcnt  (movie_mem_burst),
     .ddram_addr      (movie_mem_addr),
     .ddram_rd        (movie_mem_read),

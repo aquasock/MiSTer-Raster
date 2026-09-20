@@ -1,12 +1,20 @@
 # Subtitle support
 
 SRT only, one track at a time, rendered as plain text on a shared generic
-overlay compositor (the same one that draws the transport/track UI).
+overlay compositor (the same one that draws the transport UI).
 Implemented across a control/timing module (`media_subtitles`), a format
 parser (`media_srt_parser`), offset/speed modules (`media_subtitle_time`/
 `media_subtitle_select`), and the shared on-screen renderer
 (`media_overlay_compositor`, also used by the UI — see the architecture and
-visualizers documents for where that sits in the video chain).
+UI documents for where that sits in the video chain).
+
+## Automatic TAR association
+
+A playlist movie automatically loads its matching SRT member by filename stem.
+The user only needs **Subtitles → Visible** to enable/disable captions; the
+setting persists across track changes. Movies without a matching SRT clear
+previous captions. Manual **Load** remains available for the current movie.
+See [TAR/M3U playlists](TAR_PLAYLIST_BOUNDARY.md) for naming and limits.
 
 ## Format: streaming SRT, no cue database
 

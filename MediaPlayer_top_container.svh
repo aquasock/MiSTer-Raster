@@ -100,25 +100,9 @@ mpeg2_stream_fifo mpeg2_stream_fifo
 // as an implicit audio transport.  Prefer on-chip FIFO/RAM when practical.
 // The DDR service and Phase 1S/1T clients run in the decoder clock domain.
 assign DDRAM_CLK = clk_mpeg2;
-assign DDRAM_ADDR=media_music_mode?music_mem_addr:movie_mem_addr;
-assign DDRAM_DIN=media_music_mode?music_mem_data:movie_mem_data;
-assign DDRAM_BE=media_music_mode?music_mem_be:movie_mem_be;
-assign DDRAM_BURSTCNT=media_music_mode?8'd1:movie_mem_burst;
-assign DDRAM_RD=media_music_mode?music_mem_read:movie_mem_read;
-assign DDRAM_WE=media_music_mode?music_mem_write:movie_mem_write;
-reg music_started=0;
-always @(posedge clk_mpeg2)begin
- if(reset_mpeg2)music_started<=0;
- else if(media_music_mode&&!media_quiesce)music_started<=1;
-end
-flac_ddr_decoder #(.ENABLE_RESUME(1)) music_decoder(
- .resume_frame(album_config[140]),.resume_total(album_config[139:104]),.resume_min_block(album_config[103:88]),
- .resume_max_block(album_config[87:72]),.resume_sample(album_config[71:36]),.clk(clk_mpeg2),.reset(reset_mpeg2),.cancel(media_quiesce),
- .start(media_music_mode&&!media_quiesce&&!music_started),.start_ready(),.quiescent(media_music_idle),
- .input_data(media_fifo_data[7:0]),.input_valid(media_music_mode&&media_prefill_mpeg&&!mpeg2_stream_empty&&!media_eof_at_head),
- .input_end(media_eof_seen),.input_ready(media_music_input_ready),.metadata_valid(media_music_metadata),.total_samples(media_music_total),
- .pcm_valid(music_raw_valid),.pcm_ready(music_raw_ready),.pcm_eof(music_raw_eof),
- .pcm_left(music_raw_pcm[31:16]),.pcm_right(music_raw_pcm[15:0]),.error(media_music_decode_error),
- .mem_addr(music_mem_addr),.mem_data(music_mem_data),.mem_be(music_mem_be),.mem_read(music_mem_read),.mem_write(music_mem_write),
- .mem_busy(DDRAM_BUSY||!media_music_mode),.mem_q(DDRAM_DOUT),.mem_q_valid(DDRAM_DOUT_READY&&media_music_mode));
-
+assign DDRAM_ADDR=movie_mem_addr;
+assign DDRAM_DIN=movie_mem_data;
+assign DDRAM_BE=movie_mem_be;
+assign DDRAM_BURSTCNT=movie_mem_burst;
+assign DDRAM_RD=movie_mem_read;
+assign DDRAM_WE=movie_mem_write;

@@ -2,7 +2,7 @@
 // coherent control snapshots arrive upstream through video_config_cdc.
 // Producer writes only inactive storage, then commits. Publication/ack occur
 // at a frame boundary, so active glyph memory is never changed mid-frame.
-module media_overlay_compositor(
+module media_overlay_compositor #(parameter FIXED_PROGRESS=0)(
  input wire clk,
  input wire [23:0] rgb,input wire hs,vs,de,
  input wire layout_de,
@@ -70,6 +70,19 @@ always @(posedge clk) begin
   end
  end
 end
+// Only transport objects use Phosphor's native 640x480 coordinate space.
+// Subtitle objects retain the HDMI coordinate space and existing font sizing.
+wire [11:0] progress_x,progress_y;
+wire progress_inside;
+generate if(FIXED_PROGRESS) begin: fixed_progress
+ media_progress_coordinates coordinates(.clk(clk),.frame(frame),.de(layout_de),
+  .line_end(de_d&&!layout_de),.width(width),.height(height),.x(x),.y(y),
+  .px(progress_x),.py(progress_y),.inside_area(progress_inside));
+end else begin
+ assign progress_x=x;assign progress_y=y;assign progress_inside=1'b1;
+end endgenerate
+reg [11:0] px_capture,py_capture,px0,py0;
+reg progress_capture;
 // Ten aligned stages: axis comparisons, qualification, object selection,
 // offset, coordinate ROM, character RAM, font ROM, palette, blend ROM, output.
 // Enable/epoch qualification cannot be folded into the comparison carry path.
@@ -84,20 +97,20 @@ reg [3:0] scale0;
 reg page0;
 integer i;
 always @(posedge clk) begin
- x_capture<=x;y_capture<=y;scale_capture<=scale;page_capture<=page;
+ x_capture<=x;y_capture<=y;px_capture<=progress_x;py_capture<=progress_y;progress_capture<=progress_inside;scale_capture<=scale;page_capture<=page;
  enable_capture<=object_enable;valid_capture<=layout_de && !copy_busy;
  epoch_capture<=active_epoch==current_epoch;
  for(integer t=0;t<8;t=t+1) begin
-  text_x[t]<=x>=active[t][11:0] && x<active[t][47:36];
-  text_y[t]<=y>=active[t][23:12] && y<active[t][35:24];
+  text_x[t]<=(t<3?progress_x:x)>=active[t][11:0] && (t<3?progress_x:x)<active[t][47:36];
+  text_y[t]<=(t<3?progress_y:y)>=active[t][23:12] && (t<3?progress_y:y)<active[t][35:24];
  end
  for(integer r=8;r<12;r=r+1) begin
-  rect_x[r-8]<=x>=active[r][11:0] && x<active[r][35:24];
-  rect_y[r-8]<=y>=active[r][23:12] && y<active[r][47:36];
+  rect_x[r-8]<=(r<10?progress_x:x)>=active[r][11:0] && (r<10?progress_x:x)<active[r][35:24];
+  rect_y[r-8]<=(r<10?progress_y:y)>=active[r][23:12] && (r<10?progress_y:y)<active[r][47:36];
  end
- x0<=x_capture;y0<=y_capture;scale0<=scale_capture;page0<=page_capture;
- text_hits<=text_x & text_y & enable_capture[7:0] & {8{valid_capture && epoch_capture}};
- rect_hits<=rect_x & rect_y & enable_capture[11:8] & {4{valid_capture && epoch_capture}};
+ x0<=x_capture;y0<=y_capture;px0<=px_capture;py0<=py_capture;scale0<=scale_capture;page0<=page_capture;
+ text_hits<=text_x & text_y & {5'b11111,{3{progress_capture}}} & enable_capture[7:0] & {8{valid_capture && epoch_capture}};
+ rect_hits<=rect_x & rect_y & {2'b11,{2{progress_capture}}} & enable_capture[11:8] & {4{valid_capture && epoch_capture}};
 end
 reg [11:0] selected_x,selected_y;
 reg [2:0] selected_slot;
@@ -105,7 +118,7 @@ reg [1:0] selected_text,selected_rect;
 always @* begin
  i=0;selected_x=0;selected_y=0;selected_slot=0;selected_text=0;selected_rect=0;
  for(i=8;i<12;i=i+1)
-  if(rect_hits[i-8]) selected_rect=(active[i][51] && x0[3])?2'd1:active[i][53:52];
+  if(rect_hits[i-8]) selected_rect=(active[i][51] && (i<10?px0[3]:x0[3]))?2'd1:active[i][53:52];
  for(i=0;i<8;i=i+1)
   if(text_hits[i]) begin
    selected_x=active[i][11:0];selected_y=active[i][23:12];
@@ -118,8 +131,8 @@ reg [3:0] scale1;
 reg page1,hit1;
 reg [1:0] tc1,rc1;
 always @(posedge clk) begin
- left1<=selected_x;top1<=selected_y;x1<=x0;y1<=y0;
- slot1<=selected_slot;scale1<=scale0;page1<=page0;hit1<=|text_hits;
+ left1<=selected_x;top1<=selected_y;x1<=selected_slot<3?px0:x0;y1<=selected_slot<3?py0:y0;
+ slot1<=selected_slot;scale1<=FIXED_PROGRESS && selected_slot<3?4'd4:scale0;page1<=page0;hit1<=|text_hits;
  tc1<=selected_text;rc1<=selected_rect;
 end
 (* preserve *) reg [11:0] dx2,dy2;

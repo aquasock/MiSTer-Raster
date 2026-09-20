@@ -70,7 +70,7 @@ end
 reg playback_started = 0;
 always @(posedge clk_mpeg2) begin
     if (reset_mpeg2_base || media_new_file_mpeg) playback_started <= 0;
-    else if (mpeg2_new_framebuffer_swap_reset_count != 0 || (media_music_mode && music_started)) playback_started <= 1;
+    else if (mpeg2_new_framebuffer_swap_reset_count != 0) playback_started <= 1;
 end
 video_config_cdc #(.WIDTH(1)) playback_osd_config (
  .src_clk(clk_mpeg2), .dst_clk(clk_sys),
@@ -85,7 +85,7 @@ video_config_cdc #(.WIDTH(1)) playback_osd_config (
 // Before the first slice is selected, bytes flow continuously for start-code/header
 // parsing.  During slice parsing the bitreader stalls this FIFO whenever its
 // current payload byte has not been fully consumed, including IQ/IDCT waits.
-assign mpeg2_stream_wr = !media_duration_busy && media_stream_valid && !mpeg2_stream_full && !media_fifo_reset;
+assign mpeg2_stream_wr = !playlist_scan_busy && !media_duration_busy && media_stream_valid && !mpeg2_stream_full && !media_fifo_reset;
 assign mpeg2_fifo_data=media_fifo_data[7:0];
 wire media_eof_at_head=!mpeg2_stream_empty && media_fifo_data[8];
 wire media_data_read;
@@ -94,7 +94,7 @@ always @(posedge clk_mpeg2) begin
     if(reset_mpeg2) media_eof_seen<=0;
     else if(media_prefill_mpeg && media_eof_at_head) media_eof_seen<=1;
 end
-assign mpeg2_stream_rd=!reset_mpeg2 && media_prefill_mpeg && (media_eof_at_head || (media_music_mode ? (!mpeg2_stream_empty && media_music_input_ready) : media_data_read));
+assign mpeg2_stream_rd=!reset_mpeg2 && media_prefill_mpeg && (media_eof_at_head || media_data_read);
 
 // Phase 1V: the decoder owns syntax/persistence backpressure, while the top
 // level additionally pauses between a persisted B and completion of its proven
@@ -110,7 +110,7 @@ assign mpeg2_new_stream_ready =
 	!mpeg2_new_p_destination_ownership_hold;
 
 // EOF is an ordered FIFO token, never a gap between host sector requests.
-wire mpeg2_new_system_input_end = media_eof_seen && !reset_mpeg2 && !media_music_mode;
+wire mpeg2_new_system_input_end = media_eof_seen && !reset_mpeg2;
 
 wire [7:0] mpeg2_ingress_data;
 wire mpeg2_ingress_valid, mpeg2_ingress_ready, mpeg2_ingress_end;
@@ -133,7 +133,7 @@ mpeg2_h262_stream_transport_gate mpeg2_h262_stream_transport_gate
 (
 	.clk              (clk_mpeg2),
 	.reset            (reset_mpeg2),
-	.fifo_empty       (media_music_mode || mpeg2_stream_empty || media_eof_at_head || reset_mpeg2 || !media_prefill_mpeg),
+	.fifo_empty       (mpeg2_stream_empty || media_eof_at_head || reset_mpeg2 || !media_prefill_mpeg),
 	.decoder_ready    (mpeg2_new_system_input_ready),
 	.fatal_error      (mpeg2_new_transport_fatal_error),
 	.fifo_read        (media_data_read),

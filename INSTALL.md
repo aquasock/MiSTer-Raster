@@ -1,61 +1,29 @@
-# Installing
+# Installing MiSTer-Raster
 
-This covers getting a built core onto real MiSTer hardware and playing
-something with it. For building the core itself, see the build document —
-this assumes you already have a finished `.rbf` in hand.
+Use a built Raster RBF on the supported Cyclone V MiSTer hardware. Copy it to
+the SD card's `_Other` directory and select it from MiSTer. The Quartus project
+currently produces `MediaPlayer.rbf`; use a dated `Raster_YYYYMMDD.rbf` filename
+when packaging a qualified build. This cleanup does not include a new release.
 
-## Requirements
+Open the core OSD and choose **Load movie or playlist** to select an MPEG-2 Program Stream
+`.mpg` with a supported MP2 soundtrack. See [MPEG](docs/MPEG.md) and
+`tools/create_mpg.txt` for the accepted profile and encoding recipe.
 
-- A MiSTer system on the target hardware this core is built for (Cyclone V
-  `5CSEBA6U23I7`, QMTech DE10-Nano-compatible), already running a normal
-  MiSTer Linux setup on its SD card.
-- The built core file (an `.rbf`, named after the core and a build date,
-  following standard MiSTer core-naming convention).
-- Media to play: an MPEG-2 Program Stream (`.mpg`) with MP2 audio, and/or a
-  `.flac` file (standalone or an embedded-CUESHEET album), and optionally a
-  matching `.srt` subtitle file for video.
+For subtitles, open **Subtitles**, choose **Load**, and select the matching
+`.srt`. Subtitle visibility, offset and speed are adjustable separately.
+Refresh rate and color matrix remain in the main core menu; press **A** with the OSD closed to switch between 4:3 and 16:9.
+Loading a different movie uses the session drain/restart path automatically.
 
-## Installing the core
+For playlists, open `tools/media-builder/index.html` in your browser, add MPG
+movies and matching SRT files, arrange the order and download a TAR. The
+**Convert video** tab can prepare supported MPGs from other video formats and
+add them directly to the playlist; its first use downloads FFmpeg. Copy it to
+the MiSTer and select it with **Load movie or playlist**. N/P selects next or
+previous; EOF advances and the playlist loops. Linked captions load
+automatically: use **Subtitles → Visible** to enable or disable them. This
+setting persists across movies. See [playlists](docs/TAR_PLAYLIST_BOUNDARY.md).
 
-Copy the `.rbf` onto the MiSTer's SD card (or a USB drive MiSTer is
-configured to read from) the same way you'd install any other MiSTer core —
-at the SD card root, alongside `menu.rbf`. MiSTer's main menu will list it
-by the core name embedded in the file once it's present; select it there to
-load it, the same as any other core.
+Standalone music playback is provided by MiSTer-Phosphor.
 
-There's no separate installer step and nothing to configure before first
-use — the core boots straight to its own menu with nothing mounted.
-
-## Loading media
-
-From the core's own menu (open it with the usual MiSTer OSD key), select
-**Load media** and browse to a file. Accepted types are MPEG Program
-Stream video and FLAC audio (standalone or album) — see the MPEG and FLAC
-documents for exactly what's supported within each format. Mounting a file
-starts playback of that file's own session; mounting a different file while
-one is already loaded cleanly restarts into the new file rather than
-requiring a manual stop first.
-
-To load subtitles for a video file, open the **Subtitles** submenu and use
-its own **Load** entry to select a matching `.srt`. Subtitles are loaded
-independently of the video file itself, so you can load a video first and
-attach (or swap) subtitles afterward, or vice versa.
-
-## Adjusting playback
-
-Everything else — subtitle visibility/offset/speed, aspect ratio, refresh
-rate, color matrix, the audio visualizer mode, and what Reset actually
-does — lives in the same OSD menu. The full menu structure, what each entry
-does, and which entries are conditionally hidden depending on whether
-you're playing a movie or music, is covered in the UI document.
-
-## Updating
-
-Replacing the core is the same as installing it: copy a newer `.rbf` over
-the old one (or alongside it, if you want to keep both — MiSTer distinguishes
-them by their embedded build date) and select it from the main menu again.
-
-## Removing
-
-Delete the `.rbf` from the SD card. Nothing else on the card is modified by
-this core outside of whatever media files you chose to load.
+Keep the previous working RBF when testing a new candidate. To remove Raster,
+delete its RBF; media files remain unchanged.

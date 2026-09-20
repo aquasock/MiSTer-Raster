@@ -1,4 +1,3 @@
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_player.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mpeg2_video_720x480p.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mpeg2_stream_fifo.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mpeg2_luma_framebuffer.sv
@@ -97,6 +96,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_ui_state.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_ui_divider.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_ui_scene.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_overlay_compositor.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_progress_coordinates.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_player_overlay.sv
 set_global_assignment -name MISC_FILE rtl/media_overlay_font.mem
 set_global_assignment -name MISC_FILE rtl/media_overlay_coordinates.mem
@@ -111,37 +111,15 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_sd_owner.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_subtitle_cdc.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_eof_control.sv
 
-# Native CD-quality FLAC, shared PCM and platform clock/HDMI ownership
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_ddr_decoder.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_frame_store.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_predict_mac.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_stereo.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_stream_decoder.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_subframe.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/hdmi_audio_config.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/hdmi_i2c_owner.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/hdmi_i2c_write_watch.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/i2c_register_master.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/media_audio_clocks.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/media_audio_rate_control.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/media_hdmi_audio_control.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/platform/media_native_audio.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/media_pcm_sink.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/media_pcm_i2s.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/media_music_time.sv
 
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_subtitle_time.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_subtitle_select.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_tar_header.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_m3u_index.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_playlist_resolver.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_movie_playlist.sv
 
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_waveform_visualizer.sv
-
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_album_control.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio/flac/flac_pcm_landing.sv
-
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_audio_viewport.sv
-
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_audio_fft.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_fire_renderer.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_audio_visualizers.sv
-
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_xy_visualizer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_movie_metadata.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_movie_playlist_ui.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_album_ui_toggle.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/media_aspect_toggle.sv

@@ -237,7 +237,7 @@ wire media_eof_video_drained=media_seek_drained && mpeg2_new_b_presentation_comp
  !mpeg2_new_pred_rd && !mpeg2_new_ddr_wr_we;
 media_eof_control eof_control(
  .clk_sys(clk_sys),.clk_mpeg2(clk_mpeg2),.reset_sys(RESET),.reset_decoder(reset_mpeg2),
- .new_file(media_external_new_file),.loaded(media_file_size!=0 && !media_music_hint),
+ .new_file(media_new_file),.loaded(media_file_size!=0 && !playlist_scan_busy),
  .sys_paused(media_paused_sys),.sys_seeking(media_seek_sys),
  .preflight(media_duration_busy),.generation(media_generation),
  .input_eof(media_eof_seen && mpeg2_ingress_end),.video_drained(media_eof_video_drained),

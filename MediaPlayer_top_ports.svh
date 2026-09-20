@@ -52,28 +52,17 @@ assign BUTTONS = 0;
 
 //////////////////////////////////////////////////////////////////
 
-// The OSD alone selects display shape; sequence metadata never overrides it.
-wire ar;
-video_config_cdc #(.WIDTH(1)) aspect_config (
- .src_clk(clk_sys), .dst_clk(clk_video),
- .src_data(status[121]), .dst_data(ar)
-);
-assign VIDEO_ARX = ar ? 13'd16 : 13'd4;
-assign VIDEO_ARY = ar ? 13'd9 : 13'd3;
-
 `include "build_id.v"
-// Status bits 3:1 remain reserved after removal of Audio test.
+// Status bits 3:1 remain reserved after removal of Audio test. Bit 121 is
+// reserved after moving the aspect ratio switch to the A key.
 localparam CONF_STR = {
-	"MediaPlayer;;",
-	"S0,MPGFL*,Load media;",
+	"Raster;;",
+	"S0,MPGTAR,Load movie or playlist;",
 `include "MediaPlayer_subtitle_menu.svh"
-	"h0P4,Visualizers:;",
-	"h0P4O[123:122],Type,Waveforms,FFT,O-Scope;",
 	"-;",
 	"-;",
-	"O[121],Aspect ratio,4:3,16:9;",
-	"D0O[6],Refresh rate,59.94 Hz,50 Hz;",
-	"D0O[5:4],Color matrix,Auto,BT.601,BT.709;",
+	"O[6],Refresh rate,59.94 Hz,50 Hz;",
+	"O[5:4],Color matrix,Auto,BT.601,BT.709;",
 
 	"-;",
 	"T[0],Reset;",

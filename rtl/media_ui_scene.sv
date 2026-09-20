@@ -1,7 +1,7 @@
 // Scene assembler. Only this producer writes the compositor's inactive page.
 // Subtitle content uses the retained auxiliary provider (slots 4-7).
 // Slot 3 is disabled; playback status labels are no longer generated.
-module media_ui_scene(
+module media_ui_scene #(parameter FIXED_PROGRESS=0)(
  input wire clk,ce,input wire [90:0] state_in,input wire [11:0] width,height,
  input wire pending,acknowledged,
  output reg text_we=0,output reg [8:0] text_addr=0,output reg [7:0] text_data=0,
@@ -30,7 +30,10 @@ reg [6:0] hours=0,minutes=0,seconds=0;
 reg [11:0] tx=0,ty=0,tw=0,th=0,track_x0=0,track_x1=0,fill_x0=0,fill_x1=0;
 reg [11:0] subtitle_bottom=0,bar_height=0,time_y=0;
 wire [11:0] font_height=scale==12?12'd21:scale==8?12'd14:12'd7;
-wire [11:0] bar_inset=scale==12?12'd6:scale==8?12'd4:12'd2;
+wire [11:0] progress_h=FIXED_PROGRESS?12'd480:h;
+wire [11:0] progress_w=FIXED_PROGRESS?12'd640:w;
+wire [11:0] progress_font_height=FIXED_PROGRESS?12'd7:font_height;
+wire [11:0] bar_inset=FIXED_PROGRESS?12'd2:scale==12?12'd6:scale==8?12'd4:12'd2;
 reg [11:0] track_y0=0,track_y1=0,fill_y0=0,fill_y1=0;
 reg [55:0] subtitle_rect0=0,subtitle_rect1=0;
 reg [11:0] fraction=0;
@@ -108,14 +111,14 @@ always @(posedge clk) begin
   end
   // Center a taller bar in the reserved gap below the lower subtitle line.
   // Reserve that same area even when no subtitle is currently visible.
-  70:multiply({36'd0,h},12'd445,71);
+  70:multiply({36'd0,progress_h},12'd445,71);
   71:divide(product,35'd480,72);
-  72:begin subtitle_bottom<=quotient[11:0]+font_height+12'd2;multiply({36'd0,h},12'd18,73);end
+  72:begin subtitle_bottom<=quotient[11:0]+progress_font_height+12'd2;multiply({36'd0,progress_h},12'd18,73);end
   73:divide(product,35'd480,74);
   74:begin bar_height<=quotient[11:0];state<=75;end
-  75:begin track_y0<=subtitle_bottom+((h-subtitle_bottom-bar_height)>>1);state<=76;end
+  75:begin track_y0<=subtitle_bottom+((progress_h-subtitle_bottom-bar_height)>>1);state<=76;end
   76:begin
-   track_y1<=track_y0+bar_height;time_y<=track_y0+((bar_height-font_height)>>1);
+   track_y1<=track_y0+bar_height;time_y<=track_y0+((bar_height-progress_font_height)>>1);
    fill_y0<=track_y0+bar_inset;fill_y1<=track_y0+bar_height-bar_inset;state<=1;
   end
   1:begin
@@ -145,11 +148,12 @@ always @(posedge clk) begin
    else text_data<=time_glyph(ch);
    if(ch==63) state<=6;else ch<=ch+1'b1;
   end
-  6:multiply({36'd0,w},field==0?12'd141:field==2?12'd579:12'd360,46);
+  6:multiply({36'd0,((FIXED_PROGRESS && field<3)?progress_w:w)},field==0?12'd141:field==2?12'd579:12'd360,46);
   46:divide(product,35'd720,7);
   7:begin
-   tw<=12'((text_span+13'd3)>>2);th<=font_height;
-   tx<=quotient[11:0]-12'(text_span>>3);
+   tw<=(FIXED_PROGRESS && field<3)?glyph_span:12'((text_span+13'd3)>>2);
+   th<=(FIXED_PROGRESS && field<3)?progress_font_height:font_height;
+   tx<=quotient[11:0]-((FIXED_PROGRESS && field<3)?(glyph_span>>1):12'(text_span>>3));
    if(field<3)begin ty<=time_y;state<=9;end
    else multiply({36'd0,h},field==4?(aux_length1!=0?12'd431:12'd445):12'd445,47);
   end
@@ -176,13 +180,13 @@ always @(posedge clk) begin
    object_we<=1;object_addr<={1'b0,field};object_data<=auxiliary_objects[field[1:0]];
    if(field==7) state<=20;else begin field<=field+1'b1;ch<=0;state<=10;end
   end
-  20:multiply({36'd0,w},12'd32,50);
+  20:multiply({36'd0,progress_w},12'd32,50);
   50:divide(product,35'd720,21);
-  21:begin track_x0<=quotient[11:0];multiply({36'd0,w},12'd688,51);end
+  21:begin track_x0<=quotient[11:0];multiply({36'd0,progress_w},12'd688,51);end
   51:divide(product,35'd720,22);
-  22:begin track_x1<=quotient[11:0];multiply({36'd0,w},12'd34,52);end
+  22:begin track_x1<=quotient[11:0];multiply({36'd0,progress_w},12'd34,52);end
   52:divide(product,35'd720,23);
-  23:begin fill_x0<=quotient[11:0];multiply({36'd0,w},12'd686,53);end
+  23:begin fill_x0<=quotient[11:0];multiply({36'd0,progress_w},12'd686,53);end
   53:divide(product,35'd720,24);
   24:begin fill_x1<=quotient[11:0];state<=28;end
   28:begin

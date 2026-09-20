@@ -1,89 +1,58 @@
-# Transport UI overlay
+# Movie transport UI
 
-The on-screen time/progress-bar overlay, composited on top of the scaled
-video ahead of subtitles (see the visualizers document for where this sits
-relative to `ascal` and the audio visualizer stage, and the subtitles
-document for the format this shares its renderer with).
+The player overlay combines the TAR playlist panel, movie time/progress and subtitles after HDMI
+video processing and before the MiSTer OSD. Movie pixels, sync and layout DE
+enter the compositor together.
 
-## Menu structure
+## Menu and transport
 
-The OSD is a flat list of top-level entries plus two conditionally-shown
-submenus:
+- **Load movie or playlist** selects an `.mpg` or playlist `.tar`.
+- **Subtitles** controls linked SRT visibility, offset and speed; manual Load
+  is also available. Visibility persists across movies.
+- **Refresh rate** and **Color matrix** control movie output. Press **A** with the
+  OSD closed to switch between 4:3 and 16:9; the choice is not saved and starts
+  at 4:3 after power-up.
+- **Reset** and **Reset and close OSD** restart the current mounted movie;
+  or returns to the first playlist entry; the second action also closes OSD.
 
-- **Load media** — mount a file (movie or music/album; see the FLAC and
-  MPEG documents for what's accepted). Covered below.
-- **Subtitles** submenu — load an `.srt`, toggle visibility, and set
-  offset/speed. Covered in full in the subtitles document.
-- **Visualizers** submenu (Type: Waveforms/FFT/O-Scope) — shown only during
-  music playback, hidden entirely for movie playback since it has no effect
-  there. See the visualizers document for what each mode does.
-- **Aspect ratio**, **Refresh rate**, **Color matrix** — video-output
-  settings, detailed in the MPEG document. Refresh rate and color matrix are
-  the mirror image of the Visualizers submenu: hidden during music playback,
-  shown only for movie playback, since both are meaningless without a
-  decoded picture. Aspect ratio has no such restriction and stays visible in
-  both modes, since it also affects how the visualizer viewport is framed.
-- **Reset** / **Reset and close OSD** — two menu entries bound to the same
-  underlying action; the second additionally closes the menu afterward.
-  Covered below alongside Load media, since they trigger the same
-  restart mechanism.
+Loading, resetting and natural EOF use the existing session restart/drain
+control. Movie pause and seek controls remain. For playlists, N/P selects next/previous
+while the OSD is closed; EOF advances and both directions wrap. See [MPEG](MPEG.md) for playback details.
 
-The music/movie-mode split for the Visualizers/Refresh-rate/Color-matrix
-entries is driven by a single flag threaded into the menu system, the same
-one that selects the music vs. movie audio decode path elsewhere in the
-design (see the architecture document) — so "is a menu item visible" and
-"is the decoder in music mode" are answering the same underlying question,
-not two independently-maintained pieces of state.
+## TAR playlist panel
 
-## Loading and resetting
+With a TAR playlist loaded and the MiSTer OSD closed, press **I** to show or
+hide the Phosphor-style playlist panel. It shows the playlist name and up to
+six movie titles, highlights the playing movie and follows **N/P**
+and automatic advance. The playlist heading is centered. Long selected titles
+and the playlist name scroll; the playing title moves one character every ten
+output frames and pauses for 45 frames at each end, matching Phosphor. Nonplaying
+rows remain stationary. Titles use the full 27-character row width; no track
+numbers are drawn.
+The panel remains visible across movie transitions; opening another file or
+resetting the playlist closes it. Standalone MPG playback has no playlist panel.
 
-Both **Load media** (mounting a new file) and **Reset**/**Reset and close
-OSD** funnel into the same restart signal, alongside the physical reset
-button and a natural end-of-file close — there's no separate "reset" code
-path distinct from "loading a file." The practical difference is just what
-gets loaded afterward: mounting a file starts a session against that file;
-Reset restarts a session against whatever's *currently* mounted, re-reading
-it from the start. Either one increments the same session counter this
-document's state bus carries (see "Where state comes from" above) and drains
-outstanding readers/DDR clients through the session controller's generation
-counter (see the architecture document) before the restart actually begins
-— so a Reset during active seeking or playback is a clean stop-then-restart,
-never a restart racing in-flight work from the previous session.
+The builder already supplies `#PLAYLIST` and `#EXTINF` display names, so existing
+builder TARs work without repackaging. Plain M3U entries fall back to their
+basename. Display text is bounded to 31 printable ASCII bytes per title;
+unsupported bytes appear as `?`. This affects display only, not file matching.
+A blanking-time formatter caches the title rows for a six-stage pixel pipeline.
+The panel is centered in the HDMI output, with integer scaling at larger
+resolutions. Subtitles and the time/progress display are composed above it.
+The existing direct/analog output overlay limitations remain unchanged.
 
-## Where state comes from
+## State and visibility
 
-A single state module derives one coherent 91-bit state bus from playback
-signals — elapsed/duration/target, paused/seeking flags, and a parallel
-music-mode elapsed/duration/track-origin set for track-relative time. That
-bus carries a 16-bit session counter (incremented on a new file or the start
-of a seek) that later stages use as a tamper/staleness check — content built
-against an old session number is never displayed as if it were current. This
-state crosses from the control clock domain to the video clock domain
-through one coherent multi-bit synchronizer, so the renderer always sees a
-single consistent snapshot, never a torn mix of old and new fields.
+`media_ui_state` emits the same 91-bit scene state: elapsed time, duration,
+qualified duration validity, visibility, loaded state and a 16-bit epoch.
+New files and seeks invalidate stale subtitle/UI scenes. Seek previews use
+movie-relative targets. If presentation passes the qualified duration by more
+than the existing tolerance, duration-based seeking remains disabled.
 
-## Visibility timing
-
-The overlay isn't always on screen — it's shown for a bounded window and
-then hides itself:
-
-- **Manual activity** (pause toggled, a seek engaged, or the seek target
-  moving) shows the overlay and resets its hide countdown to 3 seconds,
-  every time it happens — holding a seek key down keeps extending the
-  window rather than letting it expire mid-seek.
-- **Loading a file**, or **a natural track change during music playback**,
-  also shows the overlay, but for **6 seconds in music mode** (3 seconds
-  elsewhere), split into two consecutive 3-second phases.
-- Those two music-mode phases show *different* information: for the first
-  3 seconds it shows **track**-relative elapsed/duration, then
-  automatically switches to **album**-relative elapsed/duration for the
-  remaining 3 seconds, then hides. A seek during music playback is handled
-  differently from a natural track change — it always shows track-relative
-  time for its own (separate) 3-second window, never the album view, since a
-  seek isn't considered "arriving at a new track" for this purpose.
-- A landed seek during an active album/track transition doesn't get
-  double-counted as a second natural track change — that transition is
-  explicitly suppressed until the track state actually confirms it settled.
+Loading or manual activity shows the overlay for three seconds. Seeking keeps
+it visible; pause/seek changes refresh the countdown. Subtitles retain their
+independent visibility group. Track/album timing and the six-second music
+sequence have been removed.
 
 ## Scene assembly
 
@@ -93,9 +62,10 @@ multicycle timing budget — the rest of the render pipeline still runs at
 full pixel rate), turns that state bus into up to 8 text regions and 4
 rectangles:
 
-- **Font scale** is chosen from output height: the largest of three integer
-  glyph sizes at 1080p-class output, a middle size around 720p, the
-  smallest below that — never a fractional/interpolated scale.
+- **Transport scale** uses Phosphor's native 640×480 layout, scaled by nearest
+  neighbor into the largest centered 4:3 area inside the HDMI output. The bar
+  and all three clocks scale together, independently of movie aspect ratio.
+  Subtitle fonts retain the existing three integer sizes based on output height.
 - **Time math** — HH:MM:SS for up to three fields (position, duration, and
   remaining time) — runs through one shared restoring integer divider,
   reused serially for every division the scene needs (percentage/pixel math
@@ -105,10 +75,10 @@ rectangles:
   which timestamp is being formatted.
 - **Progress bar fill** is a real proportional computation — current
   position multiplied by the bar's pixel width, divided by duration through
-  that same shared divider — not a coarse or stepped indicator. Layout
-  (bar position, track width, fill inset) is itself computed from the
-  current output resolution every time a scene is built, not hardcoded to
-  one resolution.
+  that same shared divider — not a coarse or stepped indicator. Bar position, width, fill inset and clock positions are calculated in
+  native 640×480 coordinates. A phase accumulator maps output pixels into
+  that scene without pixel-rate division or extra video RAM. Outputs down to
+  320×240 are supported by the transport coordinate mapper.
 - **Subtitle content merges in as part of the same scene.** A separate
   subtitle bridge hands over subtitle text/geometry (see the subtitles
   document) through dedicated inputs on this same assembler, occupying the

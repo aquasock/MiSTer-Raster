@@ -6,6 +6,26 @@ This project is still in active pre-release development. Published milestone rel
 
 ## [Unreleased]
 
+- Add the Phosphor-style I-toggle TAR movie playlist panel, with M3U names,
+  six rows, current-movie highlighting and scrolling titles. Decoder clock
+  and playback performance settings remain unchanged.
+
+- Separate Raster movie playback from Phosphor standalone music: remove FLAC
+  album decoding, music clocks/output handoff, visualizers and their assets/tools.
+- Preserve MPEG-2, MP2 movie audio, A/V timing, seeking, subtitles and transport UI.
+- Connect movie video/audio directly to retained platform output paths and
+  restore HPS-only HDMI I2C ownership; remove obsolete timing constraints.
+- Add Phosphor-style TAR/M3U MPG playlists, bounded member reads, N/P navigation,
+  automatic advance/loop and automatic SRT association with persistent visibility.
+- Add a tabbed browser builder with offline WASM MPG/SRT packaging and playlist
+  editing, plus the previous FFmpeg video-conversion workflow and direct
+  converted-movie transfer into the playlist.
+- Add a copyable native FFmpeg command with a 1–8 thread selector; browser
+  conversion retains its single-thread engine.
+- The movie-only baseline seeds 52/61/87 compile and pass all eight available corners for constrained
+  timing paths; the owner accepted seed 61 on 2026-09-19 after hardware
+  testing. External-I/O timing coverage limitations are documented separately.
+
 ## [0.9.5] - 2026-09-15 — Native-FPGA playback, visualizers and FLAC album milestone
 
 Replaces the ARM-helper/DVD-navigation path from v0.7.0-v0.9.0 with playback

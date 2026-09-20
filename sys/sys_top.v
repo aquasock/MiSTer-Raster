@@ -1184,16 +1184,16 @@ reg  [31:0] adj_data;
 	wire cfg_ready = 1;
 `endif
 
-assign HDMI_I2C_SCL = native_scl_low ? 1'b0 : 1'bZ;
-assign HDMI_I2C_SDA = native_sda_low ? 1'b0 : 1'bZ;
+assign HDMI_I2C_SCL = hdmi_scl_en ? 1'b0 : 1'bZ;
+assign HDMI_I2C_SDA = hdmi_sda_en ? 1'b0 : 1'bZ;
 
 wire hdmi_scl_en, hdmi_sda_en;
 cyclonev_hps_interface_peripheral_i2c hdmi_i2c
 (
 	.out_clk(hdmi_scl_en),
-	.scl(native_hps_scl),
+	.scl(HDMI_I2C_SCL),
 	.out_data(hdmi_sda_en),
-	.sda(native_hps_sda)
+	.sda(HDMI_I2C_SDA)
 );
 
 `ifndef MISTER_DEBUG_NOHDMI
@@ -1240,31 +1240,11 @@ cyclonev_hps_interface_peripheral_i2c hdmi_i2c
 
 	wire [23:0] hdmi_data_player;
 	wire hdmi_hs_player,hdmi_vs_player,hdmi_de_player;
-	wire [23:0] visual_rgb;
-	wire visual_hs,visual_vs,visual_de;
-	wire [47:0] audio_viewport_bounds;
-	wire audio_viewport_enabled;
-	video_config_cdc #(.WIDTH(48)) audio_viewport_config(.src_clk(clk_vid),.dst_clk(clk_hdmi),
-	 .src_data({hmin,hmax,vmin,vmax}),.dst_data(audio_viewport_bounds));
-	video_config_cdc #(.WIDTH(1)) audio_viewport_enable(.src_clk(clk_sys),.dst_clk(clk_hdmi),
-	 .src_data(music_request),.dst_data(audio_viewport_enabled));
-	wire [23:0] viewport_rgb;
-	wire viewport_hs,viewport_vs,viewport_de,viewport_layout_de;
-	media_audio_viewport audio_viewport(.clk(clk_hdmi),.enabled(audio_viewport_enabled),.bounds(audio_viewport_bounds),
-	 .rgb(hdmi_data_mask),.hs(hdmi_hs_mask),.vs(hdmi_vs_mask),.de(hdmi_de_mask),
-	 .rgb_out(viewport_rgb),.hs_out(viewport_hs),.vs_out(viewport_vs),.de_out(viewport_de),.layout_de(viewport_layout_de));
-	reg [8:0] viewport_layout_pipe=0;
-	always @(posedge clk_hdmi)viewport_layout_pipe<={viewport_layout_pipe[7:0],viewport_layout_de};
-	media_audio_visualizers visualizer(
-	 .control_clk(player_ui_clock),.select_visualizer(player_visualizer),
-	 .audio_clk(music_clock),.video_clk(clk_hdmi),.audio_active(visual_active),.sample_tick(visual_tick),
-	 .sample_left(visual_left),.sample_right(visual_right),
-	 .rgb(viewport_rgb),.hs(viewport_hs),.vs(viewport_vs),.de(viewport_de),.layout_de(viewport_layout_de),
-	 .rgb_out(visual_rgb),.hs_out(visual_hs),.vs_out(visual_vs),.de_out(visual_de));
 	media_player_overlay player_overlay(
 	 .control_clk(player_ui_clock),.video_clk(clk_hdmi),.control_state(player_ui_state),
 	 .subtitle_command(player_subtitle_command),.subtitle_ack(player_subtitle_ack),
-	 .rgb(visual_rgb),.hs(visual_hs),.vs(visual_vs),.de(visual_de),.layout_de(viewport_layout_pipe[8]),
+	 .metadata_address(player_meta_address),.metadata_data(player_meta_data),.metadata_state(player_meta_state),
+	 .rgb(hdmi_data_mask),.hs(hdmi_hs_mask),.vs(hdmi_vs_mask),.de(hdmi_de_mask),.layout_de(hdmi_de_mask),
 	 .rgb_out(hdmi_data_player),.hs_out(hdmi_hs_player),.vs_out(hdmi_vs_player),.de_out(hdmi_de_player));
 
 	osd hdmi_osd
@@ -1660,26 +1640,9 @@ assign SDCD_SPDIF = (mcp_en & ~spdif) ? 1'b0 : 1'bZ;
 	assign AUDIO_L     = av_dis ? 1'bZ : (SW[0] | mcp_en) ? HDMI_SCLK  : analog_l;
 `endif
 
-wire native_scl_low,native_sda_low,native_hps_scl,native_hps_sda;
-wire [1:0] player_visualizer;
-wire music_request,music_paused,music_pcm_reset,music_pcm_valid,music_pcm_ready;
-wire [32:0] music_pcm_data;
-wire music_clock,music_finished,music_error;
-wire visual_active,visual_tick;
-wire signed [15:0] visual_left,visual_right;
-wire [35:0] music_position;
+// Movie audio uses the platform clock, filters and serializers directly.
 wire analog_l,analog_r;
-wire movie_bclk,movie_lrclk,movie_i2s,movie_spdif,movie_analog_l,movie_analog_r;
-media_native_audio native_audio(.refclk(FPGA_CLK3_50),.config_clk(clk_sys),.wr_clk(ram_clk),.reset(reset),.movie_clock(clk_audio),
- .want_cd(music_request),.paused(music_paused),.movie_96k(audio_96k),.attenuation(vol_att),
- .pcm_reset(music_pcm_reset),.pcm_valid(music_pcm_valid),.pcm_data(music_pcm_data),.pcm_ready(music_pcm_ready),
- .visual_active(visual_active),.visual_tick(visual_tick),.visual_left(visual_left),.visual_right(visual_right),
- .cd_clock(music_clock),.position(music_position),.finished(music_finished),.error(music_error),
- .movie_bclk(movie_bclk),.movie_lrclk(movie_lrclk),.movie_data(movie_i2s),.movie_spdif(movie_spdif),.movie_dac_l(movie_analog_l),.movie_dac_r(movie_analog_r),
- .output_mclk(HDMI_MCLK),.output_bclk(HDMI_SCLK),.output_lrclk(HDMI_LRCLK),.output_data(HDMI_I2S),.output_spdif(spdif),
- .output_dac_l(analog_l),.output_dac_r(analog_r),
- .pad_scl(HDMI_I2C_SCL),.pad_sda(HDMI_I2C_SDA),.hps_scl_low(hdmi_scl_en),.hps_sda_low(hdmi_sda_en),
- .hps_scl_in(native_hps_scl),.hps_sda_in(native_hps_sda),.drive_scl_low(native_scl_low),.drive_sda_low(native_sda_low));
+assign HDMI_MCLK=clk_audio;
 wire clk_audio;
 
 pll_audio pll_audio
@@ -1721,14 +1684,14 @@ audio_out audio_out
 	.alsa_r(16'd0),
 `endif
 
-	.i2s_bclk(movie_bclk),
-	.i2s_lrclk(movie_lrclk),
-	.i2s_data(movie_i2s),
+	.i2s_bclk(HDMI_SCLK),
+	.i2s_lrclk(HDMI_LRCLK),
+	.i2s_data(HDMI_I2S),
 `ifndef MISTER_DUAL_SDRAM
-	.dac_l(movie_analog_l),
-	.dac_r(movie_analog_r),
+	.dac_l(analog_l),
+	.dac_r(analog_r),
 `endif
-	.spdif(movie_spdif)
+	.spdif(spdif)
 );
 
 
@@ -1869,6 +1832,9 @@ wire [13:0] fb_stride;
 	assign fb_stride = 0;
 `endif
 
+wire [12:0] player_meta_address;
+wire [7:0] player_meta_data;
+wire [16:0] player_meta_state;
 wire player_ui_clock;
 wire [90:0] player_ui_state;
 wire [34:0] player_subtitle_command;
@@ -1899,6 +1865,10 @@ emu emu
 	.HDMI_HEIGHT(direct_video ? 12'd0 : hdmi_height),
 	.HDMI_FREEZE(freeze),
 	.OSD_HIDE_MESSAGE(osd_hide_message),
+	.PLAYER_META_CLOCK(clk_hdmi),
+	.PLAYER_META_ADDRESS(player_meta_address),
+	.PLAYER_META_DATA(player_meta_data),
+	.PLAYER_META_STATE(player_meta_state),
 	.PLAYER_UI_CLOCK(player_ui_clock),
 	.PLAYER_UI_STATE(player_ui_state),
 	.PLAYER_SUBTITLE_COMMAND(player_subtitle_command),
@@ -1937,9 +1907,6 @@ emu emu
 	.LED_POWER(led_power),
 	.LED_DISK(led_disk),
 
-	.PLAYER_VISUALIZER(player_visualizer),.PLAYER_MUSIC(music_request),.PLAYER_MUSIC_PAUSED(music_paused),
- .PLAYER_PCM_RESET(music_pcm_reset),.PLAYER_PCM_VALID(music_pcm_valid),.PLAYER_PCM_DATA(music_pcm_data),.PLAYER_PCM_READY(music_pcm_ready),
- .CLK_AUDIO_CD(music_clock),.PLAYER_MUSIC_POSITION(music_position),.PLAYER_MUSIC_FINISHED(music_finished),.PLAYER_MUSIC_ERROR(music_error),
  .CLK_AUDIO(clk_audio),
 	.AUDIO_L(audio_l),
 	.AUDIO_R(audio_r),

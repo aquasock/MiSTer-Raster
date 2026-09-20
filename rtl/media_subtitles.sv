@@ -1,7 +1,8 @@
-// Manual SRT slot controller. Re-reads from zero after seeks instead of storing
+// Linked TAR member or manual SRT slot controller. Re-reads from zero after seeks instead of storing
 // a whole-file index. All host responses drain before a new reader session.
 module media_subtitles(
  input wire clk,reset,new_movie,mount,input wire [63:0] mount_size,
+ input wire auto_load,input wire [63:0] auto_base,auto_size,output reg archive_source=0,
  input wire loaded,seeking,enabled,suspend,input wire [36:0] elapsed_q,input wire [15:0] epoch,
  output wire [31:0] sd_lba,output wire [5:0] sd_blocks,output wire sd_rd,
  input wire sd_ack,sd_wr,input wire [12:0] sd_addr,input wire [15:0] sd_data,
@@ -9,14 +10,14 @@ module media_subtitles(
  output wire warning
 );
 reg associated=0,mount_d=0,seek_d=0,restart_pending=0;
-reg [63:0] size=0;
+reg [63:0] size=0,base=0;
 reg reader_start=0;
 wire reader_idle,byte_valid,byte_ready;
 wire [8:0] byte_data;
 wire [3:0] reader_error;
 wire remount=mount && !mount_d;
-wire invalidate=reset || new_movie || remount || (seeking&&!seek_d);
-wire cancel=reset || new_movie || remount || seeking || restart_pending || !associated;
+wire invalidate=reset || new_movie || auto_load || remount || (seeking&&!seek_d);
+wire cancel=reset || new_movie || auto_load || remount || seeking || restart_pending || !associated;
 wire parse_reset=cancel;
 wire cue_valid,parse_eof;
 reg cue_ready=0;
@@ -28,14 +29,16 @@ wire active=associated && loaded && !seeking && enabled && cue_valid &&
  elapsed_q>=cue_start && elapsed_q<cue_end && reader_error==0;
 always @(posedge clk)begin
  mount_d<=mount;seek_d<=seeking;reader_start<=0;
- if(reset || new_movie)begin associated<=0;size<=0;restart_pending<=0;end
- else if(remount)begin associated<=mount_size!=0;size<=mount_size;restart_pending<=mount_size!=0;end
+ if(reset)begin associated<=0;size<=0;base<=0;archive_source<=0;restart_pending<=0;end
+ else if(auto_load)begin associated<=auto_size!=0;size<=auto_size;base<=auto_base;archive_source<=1;restart_pending<=auto_size!=0;end
+ else if(new_movie)begin associated<=0;size<=0;base<=0;archive_source<=0;restart_pending<=0;end
+ else if(remount)begin associated<=mount_size!=0;size<=mount_size;base<=0;archive_source<=0;restart_pending<=mount_size!=0;end
  else if(seeking && associated)restart_pending<=1;
  else if(restart_pending && reader_idle && !seeking)begin restart_pending<=0;reader_start<=1;end
 end
 media_file_reader reader(
  .clk(clk),.reset(reset),.start(reader_start),.cancel(cancel),.suspend(suspend),
- .file_size(size),.start_offset(64'd0),.sd_lba(sd_lba),.sd_blk_cnt(sd_blocks),.sd_rd(sd_rd),
+ .file_size(size),.file_base(base),.start_offset(64'd0),.sd_lba(sd_lba),.sd_blk_cnt(sd_blocks),.sd_rd(sd_rd),
  .sd_ack(sd_ack),.sd_buff_wr(sd_wr),.sd_buff_addr(sd_addr),.sd_buff_dout(sd_data),
  .stream_data(byte_data),.stream_valid(byte_valid),.stream_ready(byte_ready),.idle(reader_idle),.error(reader_error),.byte_position(),.requests(),.completions(),.max_wait());
 media_srt_parser parser(.clk(clk),.reset(parse_reset),.data(byte_data),.valid(byte_valid),.ready(byte_ready),

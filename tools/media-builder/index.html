@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Raster Media Builder</title><link rel="stylesheet" href="style.css"></head><body><main>
+<header><p class="eyebrow">MiSTer-Raster utility</p><h1>Raster Media Builder</h1><p class="lede">Convert videos to MPG, then arrange movies and linked subtitles into a playlist. Your media stays in your browser.</p></header>
+<div class="tabs" role="tablist" aria-label="Media tools"><button id="playlistTab" role="tab" aria-controls="playlistPanel" aria-selected="true">Playlist TAR</button><button id="convertTab" role="tab" aria-controls="convertPanel" aria-selected="false" tabindex="-1">Convert video</button></div>
+<div id="playlistPanel" role="tabpanel" aria-labelledby="playlistTab">
+<section id="drop" class="drop" tabindex="0" role="region" aria-label="Drop movies and subtitles"><strong>Drop MPG movies and SRT subtitles here</strong><span>Matching filenames pair automatically. You can also choose a subtitle for each movie.</span><div class="pickers"><button id="choose">Choose files</button><button id="openTar" class="quiet">Open playlist TAR</button></div><input id="files" type="file" accept=".mpg,.srt" multiple hidden><input id="tarFile" type="file" accept=".tar" hidden></section>
+<section class="panel"><div class="panel-head"><div><h2>Playlist order</h2><p id="summary">No movies added.</p></div><button id="clear" class="quiet" disabled>Clear</button></div><ol id="tracks"></ol></section>
+<section class="panel settings"><label>Playlist title<input id="name" value="playlist" maxlength="120"></label></section>
+<section class="actions"><button id="build" class="primary" disabled>Build playlist TAR</button><a id="download" class="button" hidden>Download playlist</a><button id="save" hidden>Save TAR to disk</button></section><p id="status" class="status" role="status" aria-live="polite">Loading the local builder…</p>
+<details><summary>Playback and privacy</summary><p>Load the TAR in Raster. M3U order controls playback, N/P selects the next or previous movie, and the last movie loops to the first. Linked subtitles load automatically; use Subtitles → Visible in the core menu to turn them on or off. Movies without an SRT have no captions.</p><p>The archive contains a standard playlist.m3u, original MPG files and optional matching SRT files. Files are copied without transcoding or modification. The builder accepts up to 255 movies, with each member smaller than 8 GiB. Use ordinary uncompressed USTAR; compressed TAR, PAX and GNU extensions are not supported. Existing playlists can be reopened and edited. No files are uploaded.</p></details>
+</div>
+<div id="convertPanel" role="tabpanel" aria-labelledby="convertTab" hidden>
+<section class="drop" id="convertDrop" tabindex="0" aria-label="Drop a source video"><strong id="sourceLabel">Choose or drop a source video</strong><span id="sourceNote">Convert to Raster's 720×480 MPEG-2 format with movie audio.</span><div class="pickers"><button id="chooseSource">Choose video</button></div><input id="sourceFile" type="file" accept="video/*,.mkv,.avi,.mov,.webm,.mp4,.m4v,.mpg,.mpeg,.ts" hidden></section>
+<section class="panel convert-options">
+<fieldset><legend>Frame rate</legend><label><input type="radio" name="fps" value="24" checked> 24 fps</label><label><input type="radio" name="fps" value="30"> 30 fps</label></fieldset>
+<fieldset><legend>Aspect ratio</legend><label><input type="radio" name="aspect" value="4:3" checked> 4:3</label><label><input type="radio" name="aspect" value="16:9"> 16:9</label></fieldset>
+<fieldset><legend>Quality</legend><label><input type="radio" name="quality" value="standard" checked> Standard</label><label><input type="radio" name="quality" value="maximum"> Maximum</label></fieldset>
+</section>
+<section class="panel native-command">
+<h2>Convert on your computer</h2>
+<p>Use your installed FFmpeg for native conversion. This command follows the frame rate, aspect ratio and quality above. Browser conversion always uses one thread.</p>
+<div class="settings"><label>Input filename or path<input id="nativeInput" value="input.mp4" spellcheck="false"></label><label>Output filename or path<input id="nativeOutput" value="output_raster.mpg" spellcheck="false"></label><label>Native FFmpeg threads<select id="nativeThreads"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></label></div>
+<label for="nativeCommand">FFmpeg command (Bash / POSIX shell)</label>
+<textarea id="nativeCommand" rows="8" readonly spellcheck="false" aria-describedby="nativeNote"></textarea>
+<div class="actions"><button id="copyCommand">Copy command</button><span id="commandStatus" role="status"></span></div>
+<p id="nativeNote">Run from the source file's folder, or enter full paths above. The browser cannot see the source's full path. Existing output files will not be overwritten.</p>
+<h3>Convert all videos in a folder</h3>
+<p>Copy this command and run it in your videos folder using Bash or a POSIX shell (Linux, macOS or WSL). It uses the selected frame rate, aspect ratio, quality and thread count. Install FFmpeg and ffprobe first.</p>
+<label for="batchCommand">Folder conversion command</label>
+<textarea id="batchCommand" rows="12" readonly spellcheck="false" aria-describedby="batchNote"></textarea>
+<div class="actions"><button id="copyBatchCommand">Copy folder command</button><span id="batchCommandStatus" role="status"></span></div>
+<p id="batchNote">Converts video files in the current folder, including hidden files, into a Raster subfolder. Subfolders and files without video are skipped. Original extensions are kept in output names (movie.mp4 → Raster/movie.mp4.mpg) to avoid name collisions. Existing outputs are skipped.</p>
+
+</section>
+<div class="actions"><button id="convertButton" class="primary" disabled>Build MPG in browser (1 thread)</button><button id="cancelConvert" hidden>Cancel</button></div>
+<section class="status" aria-live="polite"><div class="status-line"><span id="convertStatus">Select a source video.</span><span id="convertPercent"></span></div><progress id="convertProgress" value="0" max="1"></progress></section>
+<div class="actions"><a id="downloadMpg" class="button" hidden>Download MPG</a><button id="addConverted" hidden>Add to playlist</button></div>
+<details><summary>Conversion log</summary><pre id="convertLog"></pre></details>
+<p class="footnote">Conversion downloads the FFmpeg WebAssembly engine on first use and requires an internet connection. Files are never uploaded. Encoding runs on one CPU thread; long videos need substantial browser memory and may be better converted with native FFmpeg. The Playlist TAR tab works offline.</p>
+</div>
+</main><script src="tabs.js"></script><script src="wasm.js"></script><script src="core.js"></script><script src="app.js"></script><script src="conversion-profile.js"></script><script src="convert.js"></script></body></html>

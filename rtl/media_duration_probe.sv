@@ -1,7 +1,6 @@
 // Read-only preflight owner of the existing mounted-file reader. Cancellation
 // waits for reader_idle: timeouts never recycle an outstanding Main response.
 module media_duration_probe #(
- parameter ENABLE_FLAC=0,
  parameter [63:0] HEAD_BYTES=65536, TAIL_BYTES=4194304,
  parameter integer TIMEOUT_CYCLES=500000000
 )(
@@ -18,12 +17,10 @@ module media_duration_probe #(
  output reg [63:0] read_size=0,read_offset=0,
  output reg duration_valid=0,
  output reg [34:0] duration_q=0,
- output reg music_file=0,
  output reg [32:0] origin=0
 );
 localparam IDLE=0,DRAIN=1,START_HEAD=2,HEAD=3,START_TAIL=4,TAIL=5,FINISH=6,ABORT=7;
 reg [2:0] state=IDLE;
-reg [31:0] magic=0;reg [2:0] magic_count=0;
 reg [31:0] timer=0;
 reg head_valid=0;
 reg [7:0] head_video_id=0;
@@ -44,9 +41,9 @@ media_duration_window window(
  .first_pts(first_pts),.valid(window_valid),.end_q(end_q),.have_origin(window_origin),.healthy(window_healthy),.video_stream_id(window_video_id));
 always @(posedge clk) begin
  reader_start<=0;parser_reset<=0;
- if(reset) begin state<=IDLE;duration_valid<=0;head_valid<=0;parser_reset<=1;timer<=0;music_file<=0;magic_count<=0;magic<=0;end
+ if(reset) begin state<=IDLE;duration_valid<=0;head_valid<=0;parser_reset<=1;timer<=0;end
  else if(new_file) begin
-  state<=DRAIN;duration_valid<=0;head_valid<=0;parser_reset<=1;timer<=0;music_file<=0;magic_count<=0;magic<=0;
+  state<=DRAIN;duration_valid<=0;head_valid<=0;parser_reset<=1;timer<=0;
  end else begin
   if(busy && timer<TIMEOUT_CYCLES) timer<=timer+1'b1;
   case(state)
@@ -77,10 +74,6 @@ always @(posedge clk) begin
    end
    ABORT: if(reader_idle) begin state<=IDLE;parser_reset<=1;end
   endcase
-  if(ENABLE_FLAC && state==HEAD && stream_valid && stream_ready && !stream_data[8] && magic_count<4)begin
-   magic<={magic[23:0],stream_data[7:0]};magic_count<=magic_count+1'b1;
-   if(magic_count==3 && {magic[23:0],stream_data[7:0]}==32'h664c6143)begin music_file<=1;state<=ABORT;duration_valid<=0;end
-  end
   if((reading && !reader_start && reader_error!=0) || (busy && state!=ABORT && timer>=TIMEOUT_CYCLES)) begin
    state<=ABORT;duration_valid<=0;
   end

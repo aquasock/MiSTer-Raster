@@ -1,5 +1,10 @@
 # Building
 
+The historical resource figures below predate the movie-only cleanup. Its
+accepted build is documented in [baseline results](RASTER_BUILD_RESULTS.md).
+The playlist candidate has its own [build results](RASTER_PLAYLIST_BUILD_RESULTS.md);
+hardware acceptance must be established separately for each candidate.
+
 Target: Cyclone V `5CSEBA6U23I7` (QMTech DE10-Nano-compatible MiSTer),
 Quartus Prime 17.0.2 Lite. This covers the actual build flow used to
 validate the source in this tree — not aspirational, every step here has
@@ -71,6 +76,21 @@ column-splitting off by one field if you parse them by splitting on `;` —
 the clock name is the second field, the slack value is the third, not the
 second.
 
+### Parallel seed timing sweeps
+
+Per owner instruction on 2026-09-19, run the dedicated timing sweeps for the
+isolated seed directories concurrently. Each seed still enumerates all eight
+corners and all five timing categories. From the source tree:
+
+```sh
+python3 tools/run_timing_sweep.py /path/to/isolated-build --wait-for-compile
+```
+
+This starts each seed's sweep as soon as that seed finishes compilation,
+collects every result, and writes `timing_results.json`. Do not start a second
+sweep in a directory already being analyzed. A failed seed remains in the
+results; select hardware candidates only from seeds passing every corner.
+
 ## Known gotchas (hit and worked around in this session)
 
 - **Don't run the synthesis-only tool directly against the live project
@@ -105,7 +125,30 @@ Quartus-generated checked in alongside it.
 
 On this device, on-chip block RAM is the binding constraint, not logic —
 recent builds sit around 99% RAM-block utilization against roughly 85% ALM
-utilization. Any future feature that adds block RAM (a bigger buffer, an
-additional visualizer mode, a deeper FIFO) should budget against the RAM
+utilization. Any future feature that adds block RAM (a bigger buffer, a
+new decode stage, a deeper FIFO) should budget against the RAM
 ceiling first; there's very little headroom left there even though there's
 comparatively much more spare logic capacity.
+
+## Movie-only timing report command
+
+After a full build, run from that isolated build directory:
+
+```sh
+quartus_sta -t tools/check_timing_corners.tcl
+```
+
+The script enumerates all available operating conditions and writes setup,
+hold, recovery, removal and minimum-pulse-width summaries and worst paths to
+`timing_corners/`, alongside clock, unconstrained-path and constraint checks.
+A successful script exit means reports were generated, not that timing passed.
+Inspect every category at every corner and review warnings/coverage before
+selecting a hardware candidate.
+
+### Playlist and fixed 4:3 transport rendering
+
+Run `python3 tools/verify_movie_playlist_ui.py` for metadata, key lifecycle,
+centered heading glyphs and a complete playing-title scroll cycle. Run
+`python3 tools/verify_progress_scaling.py` for exact transport pixels at five
+output sizes and per-pixel coordinate checks through six output mode changes.
+These checks do not replace hardware acceptance of a new bitstream.

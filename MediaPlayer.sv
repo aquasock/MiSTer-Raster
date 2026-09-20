@@ -1,5 +1,5 @@
 `include "MediaPlayer_top_ports.svh"
-`include "MediaPlayer_top_music.svh"
+`include "MediaPlayer_top_file.svh"
 `include "MediaPlayer_top_session.svh"
 `include "MediaPlayer_top_clocks.svh"
 `include "MediaPlayer_top_container.svh"
