@@ -6,8 +6,8 @@ produces `Raster.rbf`; copy it to a dated `Raster_YYYYMMDD.rbf` filename
 when packaging a qualified build. This cleanup does not include a new release.
 
 Open the core OSD and choose **Load movie or playlist** to select an MPEG-2 Program Stream
-`.mpg` with a supported MP2 soundtrack. See [MPEG](docs/MPEG.md) and
-`tools/create_mpg.txt` for the accepted profile and encoding recipe.
+`.mpg` with a supported MP2 soundtrack. See [MPEG](docs/MPEG.md) and the
+[media builder](tools/media-builder/README.md) for the accepted profile and encoding recipe.
 
 For subtitles, open **Subtitles**, choose **Load**, and select the matching
 `.srt`. Subtitle visibility, offset and speed are adjustable separately.
@@ -21,7 +21,7 @@ add them directly to the playlist; its first use downloads FFmpeg. Copy it to
 the MiSTer and select it with **Load movie or playlist**. N/P selects next or
 previous; EOF advances and the playlist loops. Linked captions load
 automatically: use **Subtitles → Visible** to enable or disable them. This
-setting persists across movies. See [playlists](docs/TAR_PLAYLIST_BOUNDARY.md).
+setting persists across movies. See [playlists](docs/PLAYLISTS.md).
 
 Standalone music playback is provided by MiSTer-Phosphor.
 

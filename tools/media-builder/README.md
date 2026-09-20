@@ -12,7 +12,7 @@ Raster follows the embedded-M3U TAR format used by Phosphor. The archive
 contains `playlist.m3u`, unchanged movie bytes, and optional matching SRTs.
 Captions load with their movie; the core's subtitle visibility menu turns them
 on/off. Open an existing TAR to edit its order and links. See
-[the profile](../../docs/TAR_PLAYLIST_BOUNDARY.md) for format limits.
+[the profile](../../docs/PLAYLISTS.md) for format limits.
 
 ## Convert video
 
@@ -78,21 +78,11 @@ python3 tools/media-builder/build_wasm.py --zig /path/to/zig
 ```
 
 The build prints the binary SHA-256 and regenerates both WASM representations.
-Python browser checks require Selenium, Chrome and a matching chromedriver:
-
-```sh
-python3 tools/verify_media_builder.py --driver /path/to/chromedriver --output /tmp/raster-builder-test
-python3 tools/verify_movie_playlist.py --builder-tar /tmp/raster-builder-test/builder-roundtrip.tar
-python3 tools/verify_native_command.py --driver /path/to/chromedriver
-python3 tools/verify_native_batch_command.py --driver /path/to/chromedriver
-python3 tools/verify_playlist_io.py
-python3 tools/verify_media_conversion.py --driver /path/to/chromedriver --output /tmp/raster-builder-test
-```
-
-The hardware simulations require Icarus Verilog (`iverilog` and `vvp`).
-Conversion checks also require native `ffmpeg`/`ffprobe` and internet access for
-the pinned browser engine. They validate actual output streams, conversion
-options, audio-free sources, cancel/retry and exact movie/SRT TAR handoff.
+The browser and simulation checks used to verify the builder (Selenium/Chrome
+tests of the WASM codec, native-command output and conversion, plus the RTL
+playlist benches) are not part of this repository;
+[QUALIFICATION.md](../../docs/QUALIFICATION.md#verification-during-development)
+records what they covered.
 Tests generate their media fixtures; supplied user movies are not modified.
 
 Original utility code is GPL-2.0-or-later. The visual style is adapted from

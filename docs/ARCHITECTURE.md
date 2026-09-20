@@ -2,8 +2,8 @@
 
 Raster keeps MPEG video, MP2 movie audio, subtitles and transport controls.
 The current source removes the former standalone FLAC/visualizer path.
-Published pre-cleanup resource figures are in [the baseline](RASTER_CLEANUP_BASELINE.md);
-new resource/timing claims require a new fitted build.
+Resource, timing and hardware-acceptance records for every build are in
+[QUALIFICATION.md](QUALIFICATION.md); new claims require a new fitted build.
 
 ## Integration
 
@@ -17,6 +17,8 @@ The core exposes ordinary video/audio signals plus `PLAYER_UI_CLOCK`,
 `PLAYER_UI_STATE`, and `PLAYER_SUBTITLE_COMMAND/ACK`. The HDMI path feeds
 scaled/processed movie pixels directly to `media_player_overlay`, then OSD.
 RGB, sync, DE and layout DE enter the overlay at the same pipeline stage.
+`media_aspect_toggle` turns the A key into the 4:3/16:9 choice, which crosses into
+the video clock domain through `video_config_cdc` to drive `VIDEO_ARX/ARY`.
 
 ## MPEG and MP2
 
@@ -67,4 +69,4 @@ starting a movie session. Member tables hold movie and optional SRT bounds.
 A selected member triggers the same drain/reset path as loading a new movie.
 The reader translates member-relative duration/seek/playback positions to
 physical archive LBAs. Decoder internals remain independent of the archive.
-See [TAR/M3U playlists](TAR_PLAYLIST_BOUNDARY.md).
+See [TAR/M3U playlists](PLAYLISTS.md).

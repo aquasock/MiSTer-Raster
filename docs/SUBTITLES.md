@@ -14,7 +14,7 @@ A playlist movie automatically loads its matching SRT member by filename stem.
 The user only needs **Subtitles → Visible** to enable/disable captions; the
 setting persists across track changes. Movies without a matching SRT clear
 previous captions. Manual **Load** remains available for the current movie.
-See [TAR/M3U playlists](TAR_PLAYLIST_BOUNDARY.md) for naming and limits.
+See [TAR/M3U playlists](PLAYLISTS.md) for naming and limits.
 
 ## Format: streaming SRT, no cue database
 

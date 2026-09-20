@@ -82,14 +82,13 @@ and subtitle clear/epoch handshakes remain in place.
 
 ## Validation
 
-Run `python3 tools/verify_movie_playlist.py` for deterministic parser,
-resolver, navigation, bounds and malformed-archive simulations. The reader and
-subtitle integration benches are run by `tools/verify_playlist_io.py`.
-`tools/verify_media_builder.py` exercises offline Chrome/WASM, exact payload
-round-trips and the UI. Its `--output` option exports a fixture that can be
-passed to `verify_movie_playlist.py --builder-tar` to check browser output
-against production RTL. See the builder README for dependencies and rebuilds.
-Hardware acceptance is separate from these simulations and timing reports.
+The deterministic parser, resolver, navigation, bounds and malformed-archive
+simulations, the reader and subtitle integration benches, and the offline
+Chrome/WASM builder tests (exact payload round-trips, checked against the
+production RTL) were run during development. They are not part of this
+repository; [QUALIFICATION.md](QUALIFICATION.md#verification-during-development)
+records what they covered. Hardware acceptance is separate from simulations and
+timing reports.
 
 ## Playlist display
 
@@ -100,5 +99,5 @@ movie reads. `media_movie_metadata` stores a playlist name and 255 movie names
 in 8 KiB; missing EXTINF titles use the path basename. The display stores
 31 printable ASCII bytes per name. See [UI](UI.md) for display behavior.
 
-Run `python3 tools/verify_movie_playlist_ui.py` for metadata, toggle, and
-640×480/1280×720/1920×1080 RTL rendering checks.
+Metadata parsing, the toggle and the RTL rendering at 640×480, 1280×720 and
+1920×1080 were verified during development (see Validation above).

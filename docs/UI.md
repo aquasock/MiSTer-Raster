@@ -12,8 +12,8 @@ enter the compositor together.
 - **Refresh rate** and **Color matrix** control movie output. Press **A** with the
   OSD closed to switch between 4:3 and 16:9; the choice is not saved and starts
   at 4:3 after power-up.
-- **Reset** and **Reset and close OSD** restart the current mounted movie;
-  or returns to the first playlist entry; the second action also closes OSD.
+- **Reset** and **Reset and close OSD** restart the current mounted movie or, for a
+  playlist, return to its first entry; the second action also closes the OSD.
 
 Loading, resetting and natural EOF use the existing session restart/drain
 control. Movie pause and seek controls remain. For playlists, N/P selects next/previous

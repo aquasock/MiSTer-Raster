@@ -24,7 +24,7 @@ no software decoder or helper is required. Use **Load movie or playlist** to sel
 selects the next/previous movie and **A** switches between 4:3 and 16:9. Standalone music playback and audio visualizers
 have been removed.
 Open [the media builder](tools/media-builder/index.html) locally in a browser
-to create archives; [format and controls](docs/TAR_PLAYLIST_BOUNDARY.md).
+to create archives; [format and controls](docs/PLAYLISTS.md).
 
 ## Supported profile
 
@@ -42,17 +42,13 @@ Use Quartus Prime Lite 17.0.2 Build 602 with `Raster.qpf`:
 quartus_sh --flow compile Raster
 ```
 
-The Quartus project is named Raster, so a build produces `Raster.rbf`. Keep build
-outputs outside the source tree; see [Build](docs/BUILD.md) for the three-seed
-and multi-corner qualification procedure. Three movie-only builds pass all eight available timing corners for constrained
-paths; see [build results](docs/RASTER_BUILD_RESULTS.md) for the selected local
-candidate and coverage limitations. The owner accepted seed 61 on 2026-09-19
-after hardware testing. The owner also accepted playlist seed 87 after testing
-TAR/M3U playback and linked subtitles; its three seeds pass all eight constrained
-timing corners. See [playlist build results](docs/RASTER_PLAYLIST_BUILD_RESULTS.md).
-The subsequent I-toggle playlist panel passes all eight constrained timing
-corners on selected seed 61 and awaits hardware acceptance; see
-[playlist UI build results](docs/RASTER_PLAYLIST_UI_BUILD_RESULTS.md).
+The Quartus project is named Raster, so a build produces `Raster.rbf`. `Raster.qsf`
+pins seed 52, the timing-qualified seed for the current source. Keep build outputs
+outside the source tree; [Build](docs/BUILD.md) describes the isolated three-seed
+and multi-corner procedure (`tools/build_seeds.sh`), and
+[Qualification](docs/QUALIFICATION.md) records every build's seeds, resources,
+timing-coverage limits and hardware acceptance. Seed 52 is the accepted build of the
+current source.
 
 ## Documentation and media preparation
 
@@ -61,15 +57,16 @@ corners on selected seed 61 and awaits hardware acceptance; see
 - [MPEG video and movie audio](docs/MPEG.md)
 - [Subtitles](docs/SUBTITLES.md)
 - [Playback UI](docs/UI.md)
-- [Cleanup baseline](docs/RASTER_CLEANUP_BASELINE.md)
-- [Cleanup dependency inventory](docs/RASTER_CLEANUP_INVENTORY.md)
-- [TAR/M3U playlists and linked subtitles](docs/TAR_PLAYLIST_BOUNDARY.md)
+- [TAR/M3U playlists and linked subtitles](docs/PLAYLISTS.md)
+- [Building](docs/BUILD.md)
+- [Build qualification](docs/QUALIFICATION.md)
+- [Changelog](docs/CHANGELOG.md)
 
-`tools/create_mpg.txt` contains the existing ffmpeg encoding recipe.
+The media builder's **Convert video** tab and [its README](tools/media-builder/README.md) describe the accepted MPEG-2/MP2 encoding profile and the FFmpeg recipe.
 
 ## License
 
 Project source carries GNU GPL version 2 or later headers; platform components
 retain their upstream licensing. Keep the source notices and `LICENSE.txt`
-with distributions; see [attributions](ATTRIBUTIONS.md). Historical release notes describe the combined player's
-previous releases and are retained for provenance.
+with distributions; see [attributions](ATTRIBUTIONS.md). [Historical release notes](docs/history/MEDIA_PLAYER_RELEASE_NOTES.md) describe the
+combined player's earlier releases and are retained for provenance.
