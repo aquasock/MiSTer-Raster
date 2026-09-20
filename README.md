@@ -87,6 +87,7 @@ MiSTer:
 /media/fat/_Other/Raster_YYYYMMDD.rbf
 ```
 
+The current release is v0.10.0 (see the [release notes](docs/RELEASE_NOTES.md)).
 Keep the previous working RBF when trying a new one. See [INSTALL.md](INSTALL.md).
 
 ## Preparing media
@@ -143,6 +144,7 @@ timing-coverage limits and hardware acceptance.
 - [Building](docs/BUILD.md)
 - [Build qualification](docs/QUALIFICATION.md)
 - [Changelog](docs/CHANGELOG.md)
+- [Release notes](docs/RELEASE_NOTES.md)
 - [Media Player history](docs/history/MEDIA_PLAYER_CHANGELOG.md), the common origin
   of Raster and Phosphor
 

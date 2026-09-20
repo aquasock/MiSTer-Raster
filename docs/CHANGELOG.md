@@ -2,11 +2,17 @@
 
 All notable changes to MiSTer-Raster. Raster began on 2026-09-19 as a movie-only
 fork of MiSTer Media Player v0.9.5; that project's history (v0.1.0 to v0.9.5) is
-kept in [history/](history/MEDIA_PLAYER_CHANGELOG.md). There is no tagged Raster
-release yet, so everything below is unreleased. Build results, seeds and hardware
-acceptance for each step are in [QUALIFICATION.md](QUALIFICATION.md).
+kept in [history/](history/MEDIA_PLAYER_CHANGELOG.md), and Raster's version numbers
+continue from it. Build results, seeds and hardware acceptance for each step are in
+[QUALIFICATION.md](QUALIFICATION.md), and the release notes are in
+[RELEASE_NOTES.md](RELEASE_NOTES.md).
 
 ## [Unreleased]
+
+## [0.10.0] - 2026-09-20
+
+The first Raster release: a movie-only player with TAR/M3U playlists, the A-key
+aspect switch and the browser media builder, built as `Raster.rbf` from seed 52.
 
 ### Added
 
@@ -25,7 +31,7 @@ acceptance for each step are in [QUALIFICATION.md](QUALIFICATION.md).
 - Build tooling: `tools/build_seeds.sh` (isolated per-seed builds plus the timing
   sweep), `tools/run_timing_sweep.py` and `tools/check_timing_corners.tcl`.
 - Documentation consolidated into `docs/`, with a living
-  [QUALIFICATION.md](QUALIFICATION.md).
+  [QUALIFICATION.md](QUALIFICATION.md) and [RELEASE_NOTES.md](RELEASE_NOTES.md).
 - `COPYING.LESSER` (the LGPL-3.0 text for the framework's `sys/sd_card.sv`), and an
   expanded `ATTRIBUTIONS.md` covering the MiSTer framework's per-file licenses,
   Intel/Altera generated IP and a redistribution checklist.

@@ -17,6 +17,8 @@ procedure itself is in [BUILD.md](BUILD.md).
 | 4 | 2026-09-19 | UI layout: centered heading, fixed 4:3 transport | 87 | `36f0b892…c50b` | Pending when recorded; superseded by 5 |
 | 5 | 2026-09-20 | **Current:** no track numbers, A-key aspect switch, `Raster` project and source names | **52** | `e8fbebe8…bf4dfb` | **Accepted** (see below) |
 
+Build 5 is released as v0.10.0 (see [RELEASE_NOTES.md](RELEASE_NOTES.md)).
+
 Accepted builds share one limitation: timing was closed for the constrained paths
 only (see [Timing coverage](#timing-coverage-and-limits)). No agent-run hardware
 playback is claimed anywhere in this record; every hardware statement is the
